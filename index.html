@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="פירוקייה"/>
+<title>פירוקייה</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#f0f2f5;min-height:100vh;direction:rtl;}
+:root{
+  --primary:#185FA5;--primary-light:#E6F1FB;--primary-border:#B5D4F4;
+  --success:#3B6D11;--success-light:#EAF3DE;--success-border:#C0DD97;
+  --warning-bg:#FAEEDA;--warning-text:#854F0B;--warning-border:#FAC775;
+  --danger-bg:#FCEBEB;--danger-text:#791F1F;--danger-border:#F7C1C1;
+  --text-primary:#1a1a1a;--text-secondary:#666;--text-tertiary:#999;
+  --bg-primary:#ffffff;--bg-secondary:#f5f5f3;
+  --border-light:rgba(0,0,0,0.1);--border-mid:rgba(0,0,0,0.18);
+  --radius-md:8px;--radius-lg:12px;--radius-xl:16px;
+}
+.app{max-width:430px;margin:0 auto;background:#f0f2f5;min-height:100vh;display:flex;flex-direction:column;position:relative;}
+.topbar{background:#0C447C;padding:14px 16px 12px;padding-top:max(env(safe-area-inset-top,0px),14px);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5;}
+.topbar-title{color:white;font-size:18px;font-weight:600;}
+.topbar-sub{color:rgba(255,255,255,0.65);font-size:11px;margin-top:2px;}
+.demo-badge{background:rgba(255,255,255,0.2);color:white;font-size:11px;padding:3px 10px;border-radius:20px;}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:#fff;border-bottom:1px solid var(--border-light);position:sticky;top:62px;z-index:4;}
+.tab{padding:13px 8px;text-align:center;font-size:14px;color:var(--text-secondary);cursor:pointer;border-bottom:2.5px solid transparent;transition:all 0.15s;user-select:none;}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600;}
+.screen{display:none;flex:1;flex-direction:column;}
+.screen.active{display:flex;}
+.search-wrap{padding:12px;background:#fff;border-bottom:1px solid var(--border-light);}
+.search-row{display:flex;gap:8px;}
+.search-input{flex:1;padding:11px 14px;border:1px solid var(--border-mid);border-radius:var(--radius-md);font-size:16px;background:#fff;color:var(--text-primary);direction:rtl;-webkit-appearance:none;}
+.search-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(24,95,165,0.12);}
+.btn-search{padding:11px 18px;background:var(--primary);color:white;border:none;border-radius:var(--radius-md);font-size:14px;font-weight:500;cursor:pointer;}
+.btn-search:active{opacity:0.8;}
+.search-hint{font-size:12px;color:var(--text-tertiary);margin-top:7px;}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:48px 32px;text-align:center;}
+.empty-icon{width:64px;height:64px;border-radius:50%;background:#e8edf2;display:flex;align-items:center;justify-content:center;}
+.empty-title{font-size:16px;font-weight:600;color:var(--text-primary);}
+.empty-sub{font-size:14px;color:var(--text-secondary);line-height:1.6;max-width:240px;}
+.not-found{margin:16px;padding:14px 16px;background:var(--danger-bg);border:1px solid var(--danger-border);border-radius:var(--radius-lg);font-size:14px;color:var(--danger-text);text-align:center;}
+.vcard{margin:12px;padding:16px;background:#fff;border:1px solid var(--border-light);border-radius:var(--radius-xl);box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.vcard-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.vicon{width:44px;height:44px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.vtitle{font-size:16px;font-weight:600;color:var(--text-primary);}
+.vsub{font-size:13px;color:var(--text-secondary);margin-top:2px;}
+.vmeta{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.vmeta-item{background:var(--bg-secondary);padding:8px 12px;border-radius:var(--radius-md);}
+.vmeta-label{font-size:11px;color:var(--text-tertiary);}
+.vmeta-val{font-size:13px;font-weight:600;color:var(--text-primary);margin-top:2px;}
+.section-title{padding:12px 14px 6px;font-size:12px;font-weight:600;color:var(--text-secondary);letter-spacing:0.05em;}
+.counter{padding:0 14px 10px;font-size:13px;color:var(--text-secondary);}
+.parts-list{padding:0 12px;display:flex;flex-direction:column;gap:8px;}
+.part-row{background:#fff;border:1px solid var(--border-light);border-radius:var(--radius-lg);padding:13px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.12s;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+.part-row:active{transform:scale(0.99);}
+.part-row.selected{background:var(--primary-light);border-color:var(--primary-border);}
+.part-row.dismantled{background:var(--success-light);border-color:var(--success-border);cursor:default;}
+.chk{width:24px;height:24px;border-radius:6px;border:2px solid var(--border-mid);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;background:#fff;}
+.part-row.selected .chk{background:var(--primary);border-color:var(--primary);}
+.part-row.dismantled .chk{background:var(--success);border-color:var(--success);}
+.chk svg{width:13px;height:13px;display:none;}
+.part-row.selected .chk svg,.part-row.dismantled .chk svg{display:block;}
+.part-info{flex:1;min-width:0;}
+.part-name{font-size:15px;font-weight:500;color:var(--text-primary);}
+.part-row.dismantled .part-name{color:#27500A;}
+.part-sub{font-size:12px;color:var(--text-secondary);margin-top:2px;}
+.part-makat{font-size:12px;color:var(--primary);margin-top:4px;font-weight:600;}
+.tag-dis{font-size:11px;background:var(--success-light);color:var(--success);padding:2px 8px;border-radius:20px;display:inline-block;margin-top:4px;font-weight:500;}
+.parts-search-wrap{padding:10px 12px 4px;background:transparent;}
+.parts-search-input{width:100%;padding:10px 14px;border:1px solid var(--border-mid);border-radius:var(--radius-md);font-size:15px;background:#fff;color:var(--text-primary);direction:rtl;-webkit-appearance:none;}
+.parts-search-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(24,95,165,0.12);}
+.no-results{padding:24px;text-align:center;font-size:14px;color:var(--text-secondary);}
+/* מסך כניסה */
+.login-screen{position:fixed;inset:0;background:linear-gradient(160deg,#0C447C 0%,#185FA5 60%,#1a6fbf 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:50;padding:32px 24px;direction:rtl;}
+.login-logo{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+.login-title{color:white;font-size:26px;font-weight:700;margin-bottom:6px;letter-spacing:0.01em;}
+.login-sub{color:rgba(255,255,255,0.65);font-size:14px;margin-bottom:40px;}
+.login-card{background:white;border-radius:var(--radius-xl);padding:28px 24px;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,0.2);}
+.login-field{margin-bottom:16px;}
+.login-label{font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:6px;display:block;}
+.login-input{width:100%;padding:12px 14px;border:1px solid var(--border-mid);border-radius:var(--radius-md);font-size:16px;color:var(--text-primary);direction:rtl;-webkit-appearance:none;background:#fff;}
+.login-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(24,95,165,0.12);}
+.login-input.error{border-color:#A32D2D;box-shadow:0 0 0 3px rgba(163,45,45,0.1);}
+.login-error{font-size:13px;color:#A32D2D;margin-top:12px;text-align:center;min-height:20px;}
+.btn-login{width:100%;padding:14px;background:var(--primary);color:white;border:none;border-radius:var(--radius-lg);font-size:16px;font-weight:600;cursor:pointer;margin-top:8px;transition:opacity 0.15s;}
+.btn-login:active{opacity:0.85;}
+.btn-login:disabled{opacity:0.5;cursor:default;}
+.login-version{color:rgba(255,255,255,0.35);font-size:11px;margin-top:24px;}
+.user-bar{display:flex;align-items:center;gap:8px;}
+.user-avatar{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:white;flex-shrink:0;}
+.user-name{color:rgba(255,255,255,0.85);font-size:13px;}
+.btn-logout{background:rgba(255,255,255,0.15);color:white;border:none;padding:4px 10px;border-radius:20px;font-size:12px;cursor:pointer;}
+.btn-logout:active{opacity:0.75;}
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:30;align-items:flex-end;justify-content:center;}
+.confirm-overlay.show{display:flex;}
+.confirm-box{background:#fff;border-radius:var(--radius-xl) var(--radius-xl) 0 0;padding:24px 20px 36px;width:100%;max-width:430px;direction:rtl;}
+.confirm-handle{width:36px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 20px;}
+.confirm-icon{width:52px;height:52px;border-radius:50%;background:var(--danger-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
+.confirm-title{font-size:17px;font-weight:600;color:var(--text-primary);text-align:center;margin-bottom:8px;}
+.confirm-sub{font-size:14px;color:var(--text-secondary);text-align:center;line-height:1.5;margin-bottom:20px;}
+.confirm-part-name{font-weight:600;color:var(--text-primary);}
+.confirm-actions{display:flex;gap:10px;}
+.btn-danger{flex:1;padding:13px;background:#A32D2D;color:white;border:none;border-radius:var(--radius-lg);font-size:15px;cursor:pointer;font-weight:600;}
+.btn-danger:active{opacity:0.85;}
+.bottom-bar{padding:12px;background:#fff;border-top:1px solid var(--border-light);position:sticky;bottom:0;}
+.btn-main{width:100%;padding:15px;background:var(--primary);color:white;border:none;border-radius:var(--radius-lg);font-size:16px;font-weight:600;cursor:pointer;}
+.btn-main:active{opacity:0.85;}
+.btn-main:disabled{background:#c8d0d8;color:#8a9099;cursor:default;}
+.flow-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:20;align-items:flex-end;justify-content:center;}
+.flow-overlay.show{display:flex;}
+.flow-box{background:#fff;border-radius:var(--radius-xl) var(--radius-xl) 0 0;padding:20px 20px 36px;width:100%;max-width:430px;}
+.flow-handle{width:36px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 18px;}
+.flow-title{font-size:17px;font-weight:600;color:var(--text-primary);margin-bottom:14px;}
+.flow-parts{background:var(--bg-secondary);border-radius:var(--radius-md);padding:12px 14px;margin-bottom:16px;display:flex;flex-direction:column;gap:6px;max-height:130px;overflow-y:auto;}
+.flow-part-row{display:flex;justify-content:space-between;font-size:13px;gap:8px;}
+.flow-part-name{color:var(--text-primary);}
+.flow-part-makat{color:var(--primary);font-weight:600;white-space:nowrap;}
+.flow-step{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;}
+.step-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;}
+.step-wait{background:#e8edf2;color:#888;}
+.step-active{background:var(--primary-light);color:var(--primary);}
+.step-ok{background:var(--success-light);color:var(--success);}
+.step-text{font-size:14px;color:var(--text-primary);padding-top:4px;font-weight:500;}
+.step-sub{font-size:12px;color:var(--text-secondary);margin-top:3px;}
+.flow-actions{display:flex;gap:10px;margin-top:8px;}
+.btn-sec{flex:1;padding:13px;background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border-mid);border-radius:var(--radius-lg);font-size:15px;cursor:pointer;font-weight:500;}
+.btn-pri{flex:1;padding:13px;background:var(--primary);color:white;border:none;border-radius:var(--radius-lg);font-size:15px;cursor:pointer;font-weight:600;}
+.orders-list{padding:12px;display:flex;flex-direction:column;gap:12px;flex:1;}
+.order-card{background:#fff;border:1px solid var(--border-light);border-radius:var(--radius-xl);padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.order-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.order-num{font-size:15px;font-weight:600;color:var(--text-primary);}
+.badge{font-size:12px;padding:4px 10px;border-radius:20px;font-weight:500;}
+.badge-0{background:var(--warning-bg);color:var(--warning-text);}
+.badge-1{background:var(--primary-light);color:var(--primary);}
+.badge-2{background:var(--success-light);color:var(--success);}
+.order-meta{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.order-row{display:flex;justify-content:space-between;font-size:14px;}
+.order-row span:first-child{color:var(--text-secondary);}
+.items-label{font-size:12px;color:var(--text-secondary);margin-bottom:8px;font-weight:600;}
+.order-item-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border-light);}
+.order-item-row:last-child{border-bottom:none;}
+.item-chk{width:22px;height:22px;border-radius:5px;border:2px solid var(--border-mid);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;background:#fff;transition:all 0.12s;}
+.item-chk.checked{background:var(--primary);border-color:var(--primary);}
+.item-chk svg{width:12px;height:12px;display:none;}
+.item-chk.checked svg{display:block;}
+.item-name{flex:1;font-size:14px;color:var(--text-primary);line-height:1.4;}
+.printed-tag{color:var(--success);font-size:12px;white-space:nowrap;font-weight:500;}
+.order-footer{border-top:1px solid var(--border-light);padding-top:12px;display:flex;flex-direction:column;gap:10px;}
+.status-selector{display:flex;gap:6px;}
+.status-btn{flex:1;padding:9px 4px;border-radius:var(--radius-md);font-size:13px;border:1px solid var(--border-light);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;text-align:center;transition:all 0.15s;}
+.status-btn.s0{background:var(--warning-bg);color:var(--warning-text);border-color:var(--warning-border);font-weight:600;}
+.status-btn.s1{background:var(--primary-light);color:var(--primary);border-color:var(--primary-border);font-weight:600;}
+.status-btn.s2{background:var(--success-light);color:var(--success);border-color:var(--success-border);font-weight:600;}
+.btn-print-order{width:100%;padding:11px;background:var(--bg-secondary);color:var(--primary);border:1px solid var(--primary-border);border-radius:var(--radius-lg);font-size:14px;cursor:pointer;font-weight:500;}
+.btn-print-order:disabled{opacity:0.35;cursor:default;}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a1a;color:white;padding:12px 20px;border-radius:var(--radius-lg);font-size:14px;opacity:0;transition:all 0.25s;pointer-events:none;white-space:nowrap;z-index:99;box-shadow:0 4px 16px rgba(0,0,0,0.3);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+@keyframes spin{to{transform:rotate(360deg);}}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.35);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block;}
+</style>
+</head>
+<body>
+<!-- מסך כניסה -->
+<div class="login-screen" id="login-screen">
+  <div class="login-logo">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.6">
+      <path d="M5 17H3v-5l2-5h14l2 5v5h-2M5 17a2 2 0 104 0m6 0a2 2 0 104 0"/>
+    </svg>
+  </div>
+  <div class="login-title">פירוקייה</div>
+  <div class="login-sub">מערכת ניהול פירוק חלקים</div>
+  <div class="login-card">
+    <div class="login-field">
+      <label class="login-label">שם משתמש</label>
+      <input class="login-input" id="login-user" type="text" placeholder="הכנס שם משתמש" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('login-pass').focus()"/>
+    </div>
+    <div class="login-field" style="margin-bottom:4px;">
+      <label class="login-label">סיסמה</label>
+      <input class="login-input" id="login-pass" type="password" placeholder="הכנס סיסמה" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <button class="btn-login" id="btn-login" onclick="doLogin()">כניסה למערכת</button>
+  </div>
+  <div class="login-version">גרסת דמו — לא מחובר לפריורטי</div>
+</div>
+
+<div class="app" id="main-app" style="display:none;">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">פירוקייה</div>
+      <div class="topbar-sub">מחובר לפריורטי</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <span class="user-name" id="user-display"></span>
+      <button class="btn-logout" onclick="doLogout()">יציאה</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('dismantle')">פירוק חלקים</div>
+    <div class="tab" onclick="switchTab('orders')">הזמנות לקוח</div>
+  </div>
+
+  <div class="screen active" id="screen-dismantle">
+    <div class="search-wrap">
+      <div class="search-row">
+        <input class="search-input" id="regInput" placeholder="מספר רכב (7–8 ספרות)" maxlength="8" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')" onkeydown="if(event.key==='Enter')searchVehicle()"/>
+        <button class="btn-search" onclick="searchVehicle()">חפש</button>
+      </div>
+      <div class="search-hint">הכנס מספר רצוף ללא מקפים</div>
+    </div>
+    <div id="dismantle-body">
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.6"><path d="M5 17H3v-5l2-5h14l2 5v5h-2M5 17a2 2 0 104 0m6 0a2 2 0 104 0"/></svg>
+        </div>
+        <div class="empty-title">חפש רכב לפירוק</div>
+        <div class="empty-sub">הכנס מספר רכב כדי למשוך פרטים ורשימת חלקים מפריורטי</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-orders">
+    <div class="orders-list" id="orders-list"></div>
+  </div>
+
+  <div class="flow-overlay" id="flow-overlay" onclick="if(event.target===this)closeFlow()">
+    <div class="flow-box">
+      <div class="flow-handle"></div>
+      <div class="flow-title">שליחה לפריורטי</div>
+      <div class="flow-parts" id="flow-parts-list"></div>
+      <div class="flow-step"><div class="step-dot step-wait" id="dot1">1</div><div><div class="step-text">שליחת נתונים לפריורטי</div><div class="step-sub" id="sub1">קוד מכלול + מספר רכב → בניית מק"ט</div></div></div>
+      <div class="flow-step"><div class="step-dot step-wait" id="dot2">2</div><div><div class="step-text">פריורטי יוצר מק"ט לכל חלק</div><div class="step-sub" id="sub2">ממתין לתשובת פריורטי...</div></div></div>
+      <div class="flow-step"><div class="step-dot step-wait" id="dot3">3</div><div><div class="step-text">פריורטי מעדכן סטטוס</div><div class="step-sub" id="sub3">החלקים מסומנים כפורקו</div></div></div>
+      <div class="flow-actions" id="flow-actions">
+        <button class="btn-sec" onclick="closeFlow()">ביטול</button>
+        <button class="btn-pri" onclick="runFlow()">אשר ושלח</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- דיאלוג ביטול פירוק -->
+  <div class="confirm-overlay" id="confirm-overlay" onclick="if(event.target===this)closeConfirm()">
+    <div class="confirm-box">
+      <div class="confirm-handle"></div>
+      <div class="confirm-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A32D2D" stroke-width="2">
+          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+        </svg>
+      </div>
+      <div class="confirm-title">ביטול פירוק</div>
+      <div class="confirm-sub">האם אתה בטוח שברצונך לבטל את פירוק<br><span class="confirm-part-name" id="confirm-part-name"></span>?<br><span style="font-size:12px;color:var(--text-tertiary);">הסימון יוסר גם בפריורטי</span></div>
+      <div class="confirm-actions">
+        <button class="btn-sec" onclick="closeConfirm()">לא, השאר</button>
+        <button class="btn-danger" onclick="confirmUndo()">כן, בטל פירוק</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main-app -->
+<div class="toast" id="toast"></div>
+
+<script>
+const STATUSES=['לפירוק','בעבודה','פורק'];
+const VEHICLES_DB={
+  '12345678':{title:'טויוטה קורולה',sub:'2019 · לבן · 1.6',id:'VH-00412',km:'142,300',date:'12/03/2026',parts:[
+    {id:'P001',name:'פגוש קדמי',assembly:'BMP-FRONT',dismantled:false,makat:''},
+    {id:'P002',name:'דלת שמאל קדמית',assembly:'DR-FL',dismantled:false,makat:''},
+    {id:'P003',name:'מכסה מנוע',assembly:'HOOD',dismantled:true,makat:'HOOD-412'},
+    {id:'P004',name:'גיר אוטומטי',assembly:'GEAR-AUTO',dismantled:false,makat:''},
+    {id:'P005',name:'פנס ימין קדמי',assembly:'LMP-FR',dismantled:true,makat:'LMP-FR-412'},
+    {id:'P006',name:'בולם קדמי שמאל',assembly:'SHCK-FL',dismantled:false,makat:''},
+    {id:'P007',name:'פנס שמאל אחורי',assembly:'LMP-RL',dismantled:false,makat:''},
+    {id:'P008',name:'רדיאטור',assembly:'RAD',dismantled:false,makat:''},
+  ]},
+  '87654321':{title:'מזדה 3',sub:'2020 · אפור · 2.0',id:'VH-00389',km:'98,500',date:'08/03/2026',parts:[
+    {id:'Q001',name:'פגוש אחורי',assembly:'BMP-REAR',dismantled:false,makat:''},
+    {id:'Q002',name:'דלת ימין אחורית',assembly:'DR-RR',dismantled:false,makat:''},
+    {id:'Q003',name:'פנס שמאל אחורי',assembly:'LMP-RL',dismantled:false,makat:''},
+    {id:'Q004',name:'מנוע',assembly:'ENG',dismantled:false,makat:''},
+  ]}
+};
+const orders=[
+  {num:'HZ-2026-0341',customer:'יוסי כהן מוסך',date:'15/03/2026',status:0,items:[
+    {name:'פגוש קדמי — טויוטה קורולה 2019',done:false},
+    {name:'פנס ימין קדמי — טויוטה קורולה 2019',done:false},
+  ]},
+  {num:'HZ-2026-0338',customer:'מוסך אחים לוי',date:'14/03/2026',status:0,items:[
+    {name:'דלת שמאל — מזדה 3 2020',done:false},
+  ]},
+  {num:'HZ-2026-0335',customer:"גרג'ה הצפון",date:'13/03/2026',status:0,items:[
+    {name:'פנס ימין — יונדאי i35 2018',done:false},
+    {name:'בולם קדמי — יונדאי i35 2018',done:false},
+    {name:'רדיאטור — יונדאי i35 2018',done:false},
+  ]},
+];
+let currentVehicle=null;
+
+function searchVehicle(){
+  const val=document.getElementById('regInput').value.trim();
+  const body=document.getElementById('dismantle-body');
+  if(val.length<7){body.innerHTML='<div class="not-found">יש להכניס לפחות 7 ספרות</div>';currentVehicle=null;return;}
+  // אם מחובר לשרת — קרא מפריורטי
+  if(authToken){
+    searchVehicleFromServer(val);
+    return;
+  }
+  // דמו
+  const v=VEHICLES_DB[val];
+  if(!v){body.innerHTML=`<div class="not-found">רכב מספר ${val} לא נמצא בפריורטי</div>`;currentVehicle=null;return;}
+  v.parts.forEach(p=>{if(p.selected===undefined)p.selected=false;});
+  currentVehicle=v;
+  renderDismantleBody();
+}
+
+function renderDismantleBody(){
+  const v=currentVehicle;if(!v)return;
+  const sel=v.parts.filter(p=>p.selected&&!p.dismantled).length;
+  const dis=v.parts.filter(p=>p.dismantled).length;
+  const reg=document.getElementById('regInput').value;
+  document.getElementById('dismantle-body').innerHTML=`
+    <div class="vcard">
+      <div class="vcard-header">
+        <div class="vicon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="1.8"><path d="M5 17H3v-5l2-5h14l2 5v5h-2M5 17a2 2 0 104 0m6 0a2 2 0 104 0"/></svg></div>
+        <div><div class="vtitle">${v.title}</div><div class="vsub">${v.sub} · ${reg}</div></div>
+      </div>
+      <div class="vmeta">
+        <div class="vmeta-item"><div class="vmeta-label">מזהה פריורטי</div><div class="vmeta-val">${v.id}</div></div>
+        <div class="vmeta-item"><div class="vmeta-label">ק"מ</div><div class="vmeta-val">${v.km}</div></div>
+        <div class="vmeta-item"><div class="vmeta-label">תאריך קבלה</div><div class="vmeta-val">${v.date}</div></div>
+        <div class="vmeta-item"><div class="vmeta-label">חלקים ברשימה</div><div class="vmeta-val">${v.parts.length}</div></div>
+      </div>
+    </div>
+    <div class="section-title">בן חלקים לפירוק</div>
+    <div class="counter">${sel} נבחרו · ${dis} פורקו</div>
+    <div class="parts-search-wrap">
+      <input class="parts-search-input" id="partsSearch" placeholder="חפש לפי שם חלק או קוד מכלול..." oninput="filterParts(this.value)" />
+    </div>
+    <div class="parts-list" id="parts-inner">
+      ${renderPartsList(v.parts, '')}
+    </div>
+    <div style="height:80px;"></div>
+    <div class="bottom-bar">
+      <button class="btn-main" ${sel===0?'disabled':''} id="btn-send-main" onclick="openFlow()">שלח לפריורטי</button>
+    </div>`;
+}
+
+function renderPartsList(parts, query){
+  const q=query.trim().toLowerCase();
+  const filtered=q?parts.filter(p=>p.name.toLowerCase().includes(q)||p.assembly.toLowerCase().includes(q)):parts;
+  if(filtered.length===0) return '<div class="no-results">לא נמצאו חלקים התואמים לחיפוש</div>';
+  return filtered.map(p=>{
+    const cls=p.dismantled?'dismantled':(p.selected?'selected':'');
+    return `<div class="part-row ${cls}" onclick="togglePart('${p.id}')">
+      <div class="chk"><svg viewBox="0 0 13 13" fill="none" stroke="white" stroke-width="2.2"><polyline points="2,6.5 5.5,10 11,3"/></svg></div>
+      <div class="part-info">
+        <div class="part-name">${p.name}</div>
+        <div class="part-sub">קוד מכלול: ${p.assembly}</div>
+        ${p.dismantled?`<div class="part-makat">מק"ט: ${p.makat}</div><span class="tag-dis">פורק</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterParts(query){
+  const inner=document.getElementById('parts-inner');
+  if(inner) inner.innerHTML=renderPartsList(currentVehicle.parts, query);
+}
+
+let pendingUndoId=null;
+
+function togglePart(id){
+  const p=currentVehicle.parts.find(x=>x.id===id);
+  if(!p) return;
+  if(p.dismantled){
+    // פורק — שאל לפני ביטול
+    pendingUndoId=id;
+    document.getElementById('confirm-part-name').textContent=p.name;
+    document.getElementById('confirm-overlay').classList.add('show');
+    return;
+  }
+  p.selected=!p.selected;
+  // עדכן מונה וכפתור
+  const sel=currentVehicle.parts.filter(x=>x.selected&&!x.dismantled).length;
+  const dis=currentVehicle.parts.filter(x=>x.dismantled).length;
+  const counter=document.querySelector('.counter');
+  if(counter) counter.textContent=sel+' נבחרו · '+dis+' פורקו';
+  const btn=document.getElementById('btn-send-main');
+  if(btn) btn.disabled=sel===0;
+  // עדכן רק את הרשימה עם הפילטור הנוכחי
+  const q=document.getElementById('partsSearch')?document.getElementById('partsSearch').value:'';
+  const inner=document.getElementById('parts-inner');
+  if(inner) inner.innerHTML=renderPartsList(currentVehicle.parts, q);
+}
+
+function openFlow(){
+  const sel=currentVehicle.parts.filter(p=>p.selected&&!p.dismantled);
+  const reg=document.getElementById('regInput').value;
+  document.getElementById('flow-parts-list').innerHTML=sel.map(p=>
+    `<div class="flow-part-row"><span class="flow-part-name">${p.name}</span><span class="flow-part-makat">${p.assembly}-${reg.slice(-4)} <span style="color:#999;font-weight:400">(יווצר)</span></span></div>`).join('');
+  ['dot1','dot2','dot3'].forEach((d,i)=>{const el=document.getElementById(d);el.className='step-dot step-wait';el.textContent=i+1;});
+  document.getElementById('sub1').textContent='קוד מכלול + מספר רכב → בניית מק"ט';
+  document.getElementById('sub2').textContent='ממתין לתשובת פריורטי...';
+  document.getElementById('sub3').textContent='החלקים מסומנים כפורקו';
+  document.getElementById('flow-actions').style.display='flex';
+  document.getElementById('flow-actions').innerHTML='<button class="btn-sec" onclick="closeFlow()">ביטול</button><button class="btn-pri" onclick="runFlow()">אשר ושלח</button>';
+  document.getElementById('flow-overlay').classList.add('show');
+}
+
+function closeFlow(){document.getElementById('flow-overlay').classList.remove('show');}
+
+function runFlow(){
+  document.getElementById('flow-actions').style.display='none';
+  const reg=document.getElementById('regInput').value;
+  const d1=document.getElementById('dot1'),d2=document.getElementById('dot2'),d3=document.getElementById('dot3');
+  d1.className='step-dot step-active';d1.innerHTML='<div class="spinner"></div>';
+  document.getElementById('sub1').textContent='שולח נתונים...';
+  setTimeout(()=>{
+    d1.className='step-dot step-ok';d1.textContent='✓';document.getElementById('sub1').textContent='נשלח בהצלחה';
+    d2.className='step-dot step-active';d2.innerHTML='<div class="spinner"></div>';document.getElementById('sub2').textContent='פריורטי בונה מק"ט...';
+  },1400);
+  setTimeout(()=>{
+    d2.className='step-dot step-ok';d2.textContent='✓';document.getElementById('sub2').textContent='פריטים נוצרו בפריורטי';
+    d3.className='step-dot step-active';d3.innerHTML='<div class="spinner"></div>';document.getElementById('sub3').textContent='שולח הוראה לברטנדר...';
+  },2900);
+  setTimeout(()=>{
+    d3.className='step-dot step-ok';d3.textContent='✓';document.getElementById('sub3').textContent='סטטוס עודכן בפריורטי';
+    const sel=currentVehicle.parts.filter(p=>p.selected&&!p.dismantled);
+    sel.forEach(p=>{p.selected=false;p.dismantled=true;p.makat=p.assembly+'-'+reg.slice(-4);});
+    document.getElementById('flow-actions').style.display='flex';
+    document.getElementById('flow-actions').innerHTML='<button class="btn-pri" style="width:100%" onclick="closeFlow();renderDismantleBody();">סגור</button>';
+  },4400);
+}
+
+function closeConfirm(){
+  document.getElementById('confirm-overlay').classList.remove('show');
+  pendingUndoId=null;
+}
+
+function confirmUndo(){
+  const p=currentVehicle.parts.find(x=>x.id===pendingUndoId);
+  if(p){
+    p.dismantled=false;
+    p.makat='';
+    p.selected=false;
+    showToast('פירוק בוטל — מסתנכרן עם פריורטי');
+  }
+  closeConfirm();
+  const q=document.getElementById('partsSearch')?document.getElementById('partsSearch').value:'';
+  const inner=document.getElementById('parts-inner');
+  if(inner) inner.innerHTML=renderPartsList(currentVehicle.parts, q);
+  const sel=currentVehicle.parts.filter(x=>x.selected&&!x.dismantled).length;
+  const dis=currentVehicle.parts.filter(x=>x.dismantled).length;
+  const counter=document.querySelector('.counter');
+  if(counter) counter.textContent=sel+' נבחרו · '+dis+' פורקו';
+  const btn=document.getElementById('btn-send-main');
+  if(btn) btn.disabled=sel===0;
+}
+
+function renderOrders(){
+  document.getElementById('orders-list').innerHTML=orders.map((o,oi)=>{
+    const done=o.items.filter(i=>i.done).length;
+    return `<div class="order-card">
+      <div class="order-head"><div class="order-num">${o.num}</div><span class="badge badge-${o.status}">${STATUSES[o.status]}</span></div>
+      <div class="order-meta">
+        <div class="order-row"><span>לקוח</span><span>${o.customer}</span></div>
+        <div class="order-row"><span>תאריך</span><span>${o.date}</span></div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div class="items-label">פריטים — ${done}/${o.items.length} פורקו</div>
+        ${o.items.map((item,ii)=>`
+          <div class="order-item-row" onclick="toggleOrderItem(${oi},${ii})" style="cursor:pointer;">
+            <div class="item-chk ${item.done?'checked':''}">
+              <svg viewBox="0 0 13 13" fill="none" stroke="white" stroke-width="2.2"><polyline points="2,6.5 5.5,10 11,3"/></svg>
+            </div>
+            <div class="item-name" style="${item.done?'color:var(--success);text-decoration:line-through;':''}">${item.name}</div>
+            ${item.done?'<span class="printed-tag">פורק ✓</span>':''}
+          </div>`).join('')}
+      </div>
+      <div class="order-footer">
+        <div class="status-selector">
+          ${STATUSES.map((s,si)=>`<button class="status-btn ${o.status===si?'s'+si:''}" onclick="changeStatus(${oi},${si})">${s}</button>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleOrderItem(oi,ii){orders[oi].items[ii].done=!orders[oi].items[ii].done;renderOrders();}
+async function changeStatus(oi,si){
+  if(orders[oi].status===si) return;
+  orders[oi].status=si;
+  renderOrders();
+  showToast('סטטוס עודכן ל"'+STATUSES[si]+'" — מסתנכרן עם פריורטי');
+  if(authToken && orders[oi]._ordname){
+    try{
+      await apiCall('/api/orders/'+orders[oi]._ordname+'/status','PATCH',{status:STATUSES[si]});
+    }catch(e){ console.error('status sync error',e); }
+  }
+}
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',(t==='dismantle'&&i===0)||(t==='orders'&&i===1)));
+  document.getElementById('screen-dismantle').classList.toggle('active',t==='dismantle');
+  document.getElementById('screen-orders').classList.toggle('active',t==='orders');
+}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+renderOrders();
+
+// ── התחברות ──
+// ── הגדרות שרת ──
+const SERVER_URL = 'https://pirooki-server-production.up.railway.app';
+let currentUser = null;
+let authToken = null;
+
+// ── עזר: קריאה מאומתת לשרת ──
+async function apiCall(path, method='GET', body=null){
+  const opts = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(authToken ? {'Authorization': 'Bearer ' + authToken} : {})
+    }
+  };
+  if(body) opts.body = JSON.stringify(body);
+  const res = await fetch(SERVER_URL + path, opts);
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.error || 'שגיאת שרת');
+  return data;
+}
+
+async function doLogin(){
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-error');
+  const btn = document.getElementById('btn-login');
+  if(!u||!p){ err.textContent='יש למלא שם משתמש וסיסמה'; return; }
+  btn.disabled=true; btn.textContent='מתחבר...';
+  try {
+    const data = await apiCall('/api/login', 'POST', {username:u, password:p});
+    authToken = data.token;
+    currentUser = {display: data.display, role: data.role};
+    document.getElementById('user-display').textContent = data.display;
+    document.getElementById('user-avatar').textContent = data.display.charAt(0);
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('main-app').style.display='flex';
+    err.textContent='';
+    // טען הזמנות מהשרת
+    loadOrders();
+  } catch(e) {
+    err.textContent = e.message || 'שם משתמש או סיסמה שגויים';
+    document.getElementById('login-user').classList.add('error');
+    document.getElementById('login-pass').classList.add('error');
+    document.getElementById('login-pass').value='';
+  }
+  btn.disabled=false; btn.textContent='כניסה למערכת';
+}
+
+function doLogout(){
+  currentUser=null; authToken=null;
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
+  document.getElementById('login-error').textContent='';
+  document.getElementById('login-user').classList.remove('error');
+  document.getElementById('login-pass').classList.remove('error');
+  document.getElementById('main-app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+}
+
+// ── טעינת רכב מהשרת ──
+async function searchVehicleFromServer(regnum){
+  const body = document.getElementById('dismantle-body');
+  body.innerHTML='<div class="empty-state"><div class="empty-sub">מחפש ברשומות פריורטי...</div></div>';
+  try {
+    const [vehicle, parts] = await Promise.all([
+      apiCall('/api/vehicle/' + regnum),
+      apiCall('/api/parts/' + regnum)
+    ]);
+    // בנה מבנה זהה לדמו
+    const v = {
+      title: vehicle.PARTDES || vehicle.PARTNAME,
+      sub: vehicle.SERDES || '',
+      id: vehicle.SERNUM,
+      km: '', date: '',
+      parts: parts.map((p,i) => ({
+        id: p.PARTNAME + i,
+        name: p.PARTDES || p.PARTNAME,
+        assembly: p.MECLOL || p.PARTNAME,
+        dismantled: p.DISMANTLED === 'Y',
+        makat: p.DISMANTLED === 'Y' ? p.PARTNAME : '',
+        selected: false,
+        _partname: p.PARTNAME
+      }))
+    };
+    currentVehicle = v;
+    renderDismantleBody();
+  } catch(e) {
+    if(e.message && e.message.includes('לא נמצא')){
+      body.innerHTML='<div class="not-found">רכב מספר '+regnum+' לא נמצא בפריורטי</div>';
+    } else {
+      body.innerHTML='<div class="not-found">שגיאה בחיבור לפריורטי — בדוק חיבור אינטרנט</div>';
+    }
+    currentVehicle=null;
+  }
+}
+
+// ── טעינת הזמנות מהשרת ──
+async function loadOrders(){
+  try {
+    const data = await apiCall('/api/orders');
+    // המר מבנה פריורטי למבנה האפליקציה
+    const mapped = data.map(o => ({
+      num: o.ORDNAME,
+      customer: o.CDES,
+      date: o.CURDATE ? o.CURDATE.split('T')[0] : '',
+      status: ['לפירוק','בעבודה','פורק'].indexOf(o.QAMF_STATUS) >= 0
+              ? ['לפירוק','בעבודה','פורק'].indexOf(o.QAMF_STATUS) : 0,
+      items: (o.ORDERITEMS||[]).map(i => ({name: i.PARTDES||i.PARTNAME, done:false})),
+      _ordname: o.ORDNAME
+    }));
+    orders.splice(0, orders.length, ...mapped);
+    renderOrders();
+  } catch(e) {
+    console.error('orders load error:', e);
+    // אם נכשל — הצג דמו
+    renderOrders();
+  }
+}
+</script>
+</body>
+</html>

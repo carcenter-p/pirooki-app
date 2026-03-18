@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>פירוקייה — ניהול</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#f0f2f5;min-height:100vh;direction:rtl;color:#1a1a1a;}
+:root{
+  --primary:#185FA5;--primary-light:#E6F1FB;--primary-border:#B5D4F4;
+  --success:#3B6D11;--success-light:#EAF3DE;--success-border:#C0DD97;
+  --danger:#A32D2D;--danger-light:#FCEBEB;--danger-border:#F7C1C1;
+  --warning-bg:#FAEEDA;--warning-text:#854F0B;
+  --text-primary:#1a1a1a;--text-secondary:#666;--text-tertiary:#999;
+  --bg-primary:#fff;--bg-secondary:#f5f5f3;--bg-tertiary:#f0f2f5;
+  --border-light:rgba(0,0,0,0.1);--border-mid:rgba(0,0,0,0.18);
+  --radius-md:8px;--radius-lg:12px;--radius-xl:16px;
+}
+
+/* ── Login ── */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#0C447C;}
+.login-card{background:#fff;border-radius:var(--radius-xl);padding:32px 28px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,0.2);}
+.login-logo{width:56px;height:56px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+.login-title{font-size:20px;font-weight:600;text-align:center;margin-bottom:4px;}
+.login-sub{font-size:13px;color:var(--text-secondary);text-align:center;margin-bottom:24px;}
+.field{margin-bottom:14px;}
+.field label{font-size:13px;color:var(--text-secondary);display:block;margin-bottom:5px;font-weight:500;}
+.field input,.field select{width:100%;padding:11px 14px;border:1px solid var(--border-mid);border-radius:var(--radius-md);font-size:15px;color:var(--text-primary);background:#fff;direction:rtl;-webkit-appearance:none;}
+.field input:focus,.field select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(24,95,165,0.12);}
+.field input.err{border-color:var(--danger);}
+.login-error{font-size:13px;color:var(--danger);text-align:center;margin-bottom:10px;min-height:18px;}
+.btn-full{width:100%;padding:13px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-lg);font-size:15px;font-weight:600;cursor:pointer;}
+.btn-full:active{opacity:0.85;}
+.btn-full:disabled{opacity:0.5;cursor:default;}
+
+/* ── App shell ── */
+.app{display:none;flex-direction:column;min-height:100vh;}
+.app.show{display:flex;}
+.topbar{background:#0C447C;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;}
+.topbar-title{color:#fff;font-size:17px;font-weight:600;}
+.topbar-sub{color:rgba(255,255,255,0.65);font-size:11px;margin-top:2px;}
+.topbar-user{display:flex;align-items:center;gap:10px;}
+.topbar-name{color:rgba(255,255,255,0.85);font-size:13px;}
+.btn-logout{background:rgba(255,255,255,0.15);color:#fff;border:none;padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;}
+
+.main{max-width:800px;margin:0 auto;padding:28px 20px;width:100%;}
+
+/* ── Stats ── */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}
+.stat-card{background:#fff;border-radius:var(--radius-lg);padding:16px;border:1px solid var(--border-light);}
+.stat-label{font-size:12px;color:var(--text-secondary);font-weight:500;}
+.stat-val{font-size:26px;font-weight:600;color:var(--text-primary);margin-top:4px;}
+
+/* ── Section ── */
+.section{background:#fff;border-radius:var(--radius-xl);border:1px solid var(--border-light);overflow:hidden;margin-bottom:20px;}
+.section-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border-light);}
+.section-title{font-size:16px;font-weight:600;}
+.btn-add{padding:8px 16px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-md);font-size:13px;font-weight:500;cursor:pointer;}
+.btn-add:active{opacity:0.85;}
+
+/* ── Table ── */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;table-layout:fixed;}
+th{font-size:12px;font-weight:500;color:var(--text-secondary);text-align:right;padding:10px 16px;background:var(--bg-secondary);border-bottom:1px solid var(--border-light);}
+td{padding:13px 16px;border-bottom:1px solid var(--border-light);font-size:14px;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafafa;}
+.user-cell{display:flex;align-items:center;gap:10px;}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#0C447C;flex-shrink:0;}
+.role-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;display:inline-block;}
+.role-admin{background:var(--warning-bg);color:var(--warning-text);}
+.role-worker{background:var(--primary-light);color:var(--primary);}
+.pass-mask{letter-spacing:2px;color:var(--text-tertiary);}
+.btn-row{display:flex;gap:6px;}
+.btn-sm{padding:5px 12px;border-radius:var(--radius-md);font-size:12px;cursor:pointer;font-weight:500;}
+.btn-edit{background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border-mid);}
+.btn-reset{background:var(--warning-bg);color:var(--warning-text);border:1px solid #FAC775;}
+.btn-del{background:var(--danger-light);color:var(--danger);border:1px solid var(--danger-border);}
+.btn-sm:active{opacity:0.75;}
+
+/* ── Toast ── */
+.toast-bar{padding:12px 16px;border-radius:var(--radius-md);font-size:13px;margin-bottom:16px;display:none;}
+.toast-bar.show{display:block;}
+.toast-success{background:var(--success-light);color:#27500A;border:1px solid var(--success-border);}
+.toast-error{background:var(--danger-light);color:#791F1F;border:1px solid var(--danger-border);}
+
+/* ── Modal ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:20;align-items:center;justify-content:center;padding:20px;}
+.overlay.show{display:flex;}
+.modal{background:#fff;border-radius:var(--radius-xl);padding:24px;width:100%;max-width:360px;direction:rtl;}
+.modal-title{font-size:16px;font-weight:600;margin-bottom:18px;}
+.modal-actions{display:flex;gap:8px;margin-top:6px;}
+.btn-cancel{flex:1;padding:11px;background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border-mid);border-radius:var(--radius-lg);font-size:14px;cursor:pointer;font-weight:500;}
+.btn-save{flex:1;padding:11px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-lg);font-size:14px;cursor:pointer;font-weight:600;}
+.btn-danger-full{flex:1;padding:11px;background:var(--danger);color:#fff;border:none;border-radius:var(--radius-lg);font-size:14px;cursor:pointer;font-weight:600;}
+.modal-warn{background:var(--danger-light);border:1px solid var(--danger-border);border-radius:var(--radius-md);padding:12px;font-size:13px;color:#791F1F;margin-bottom:16px;}
+.hint{font-size:12px;color:var(--text-tertiary);margin-top:4px;}
+
+/* ── Log ── */
+.log-list{padding:0;}
+.log-item{display:flex;align-items:flex-start;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border-light);}
+.log-item:last-child{border-bottom:none;}
+.log-dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0;}
+.log-dot.add{background:#3B6D11;}
+.log-dot.edit{background:#185FA5;}
+.log-dot.del{background:#A32D2D;}
+.log-dot.reset{background:#BA7517;}
+.log-text{font-size:13px;color:var(--text-primary);line-height:1.5;}
+.log-time{font-size:11px;color:var(--text-tertiary);margin-top:2px;}
+</style>
+</head>
+<body>
+
+<!-- מסך כניסה -->
+<div class="login-wrap" id="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="1.8">
+        <path d="M12 2a4 4 0 014 4v1h2a2 2 0 012 2v9a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h2V6a4 4 0 014-4z"/>
+        <circle cx="12" cy="13" r="1.5" fill="#185FA5" stroke="none"/>
+      </svg>
+    </div>
+    <div class="login-title">פאנל ניהול</div>
+    <div class="login-sub">גישה למנהלים בלבד</div>
+    <div class="field">
+      <label>שם משתמש</label>
+      <input id="a-user" type="text" placeholder="שם משתמש" onkeydown="if(event.key==='Enter')document.getElementById('a-pass').focus()"/>
+    </div>
+    <div class="field">
+      <label>סיסמה</label>
+      <input id="a-pass" type="password" placeholder="סיסמה" onkeydown="if(event.key==='Enter')adminLogin()"/>
+    </div>
+    <div class="login-error" id="a-error"></div>
+    <button class="btn-full" id="a-btn" onclick="adminLogin()">כניסה</button>
+  </div>
+</div>
+
+<!-- פאנל ניהול -->
+<div class="app" id="admin-app">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">פאנל ניהול — פירוקייה</div>
+      <div class="topbar-sub">ניהול משתמשים ואבטחה</div>
+    </div>
+    <div class="topbar-user">
+      <span class="topbar-name" id="admin-name"></span>
+      <button class="btn-logout" onclick="adminLogout()">יציאה</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="toast-bar" id="toast"></div>
+
+    <!-- סטטיסטיקות -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">סה"כ משתמשים</div>
+        <div class="stat-val" id="stat-total">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">עובדים</div>
+        <div class="stat-val" id="stat-workers">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">מנהלים</div>
+        <div class="stat-val" id="stat-admins">0</div>
+      </div>
+    </div>
+
+    <!-- טבלת משתמשים -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">משתמשים</div>
+        <button class="btn-add" onclick="openAdd()">+ הוסף משתמש</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:30%">משתמש</th>
+              <th style="width:20%">שם תצוגה</th>
+              <th style="width:15%">תפקיד</th>
+              <th style="width:15%">סיסמה</th>
+              <th style="width:20%">פעולות</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- יומן פעולות -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">יומן פעולות</div>
+      </div>
+      <div class="log-list" id="log-list">
+        <div class="log-item">
+          <div class="log-dot edit"></div>
+          <div>
+            <div class="log-text">הפאנל נטען בהצלחה</div>
+            <div class="log-time" id="load-time"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- modal הוסף/ערוך -->
+<div class="overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">הוסף משתמש</div>
+    <div class="field">
+      <label>שם משתמש (לכניסה)</label>
+      <input id="f-user" type="text" placeholder="לדוג׳: ישראל"/>
+    </div>
+    <div class="field">
+      <label>שם תצוגה</label>
+      <input id="f-disp" type="text" placeholder="לדוג׳: ישראל כ."/>
+    </div>
+    <div class="field">
+      <label id="f-pass-lbl">סיסמה</label>
+      <input id="f-pass" type="password" placeholder="הזן סיסמה"/>
+      <div class="hint" id="f-pass-hint"></div>
+    </div>
+    <div class="field">
+      <label>תפקיד</label>
+      <select id="f-role">
+        <option value="worker">עובד</option>
+        <option value="admin">מנהל</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">ביטול</button>
+      <button class="btn-save" onclick="saveUser()">שמור</button>
+    </div>
+  </div>
+</div>
+
+<!-- modal מחיקה -->
+<div class="overlay" id="del-overlay" onclick="if(event.target===this)closeDelete()">
+  <div class="modal">
+    <div class="modal-title">מחיקת משתמש</div>
+    <div class="modal-warn" id="del-warn"></div>
+    <p style="font-size:14px;color:var(--text-secondary);margin-bottom:20px;">פעולה זו לא ניתנת לביטול.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeDelete()">ביטול</button>
+      <button class="btn-danger-full" onclick="confirmDelete()">מחק לצמיתות</button>
+    </div>
+  </div>
+</div>
+
+<!-- modal איפוס סיסמה -->
+<div class="overlay" id="reset-overlay" onclick="if(event.target===this)closeReset()">
+  <div class="modal">
+    <div class="modal-title">איפוס סיסמה</div>
+    <div class="field">
+      <label>סיסמה חדשה עבור <strong id="reset-name"></strong></label>
+      <input id="reset-pass" type="password" placeholder="הזן סיסמה חדשה"/>
+    </div>
+    <div class="field">
+      <label>אשר סיסמה</label>
+      <input id="reset-pass2" type="password" placeholder="הזן שוב"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeReset()">ביטול</button>
+      <button class="btn-save" onclick="confirmReset()">שמור סיסמה</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SERVER_URL = 'https://pirooki-server-production.up.railway.app';
+let authToken = null;
+let currentAdmin = null;
+let editId = null;
+let deleteId = null;
+let resetId = null;
+let nextId = 10;
+let actLog = [];
+
+let users = [];
+
+async function apiAdmin(path, method='GET', body=null){
+  const opts={method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken}};
+  if(body) opts.body=JSON.stringify(body);
+  const res=await fetch(SERVER_URL+path,opts);
+  const data=await res.json();
+  if(!res.ok) throw new Error(data.error||'שגיאת שרת');
+  return data;
+}
+
+async function loadUsers(){
+  try{
+    users = await apiAdmin('/api/admin/users');
+    renderAll();
+  }catch(e){
+    showToast('שגיאה בטעינת משתמשים: '+e.message,'error');
+  }
+}
+
+async function adminLogin(){
+  const u=document.getElementById('a-user').value.trim();
+  const p=document.getElementById('a-pass').value;
+  const err=document.getElementById('a-error');
+  const btn=document.getElementById('a-btn');
+  if(!u||!p){err.textContent='יש למלא שם משתמש וסיסמה';return;}
+  btn.disabled=true; btn.textContent='מתחבר...';
+  try{
+    const res=await fetch(SERVER_URL+'/api/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:u,password:p})
+    });
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error||'שגיאה');
+    if(data.role!=='admin'){throw new Error('גישה מותרת למנהלים בלבד');}
+    authToken=data.token;
+    currentAdmin={display:data.display};
+    document.getElementById('admin-name').textContent=data.display;
+    document.getElementById('login-wrap').style.display='none';
+    document.getElementById('admin-app').classList.add('show');
+    document.getElementById('load-time').textContent=new Date().toLocaleTimeString('he-IL');
+    err.textContent='';
+    await loadUsers();
+  }catch(e){
+    err.textContent=e.message;
+    document.getElementById('a-pass').value='';
+  }
+  btn.disabled=false; btn.textContent='כניסה';
+}
+
+function adminLogout(){
+  authToken=null; currentAdmin=null;
+  document.getElementById('a-user').value='';
+  document.getElementById('a-pass').value='';
+  document.getElementById('a-error').textContent='';
+  document.getElementById('admin-app').classList.remove('show');
+  document.getElementById('login-wrap').style.display='flex';
+}
+
+function renderAll(){
+  const total=users.length;
+  const workers=users.filter(u=>u.role==='worker').length;
+  const admins=users.filter(u=>u.role==='admin').length;
+  document.getElementById('stat-total').textContent=total;
+  document.getElementById('stat-workers').textContent=workers;
+  document.getElementById('stat-admins').textContent=admins;
+  document.getElementById('users-tbody').innerHTML=users.map(u=>`
+    <tr>
+      <td><div class="user-cell">
+        <div class="avatar">${u.display.charAt(0)}</div>
+        <span>${u.username}</span>
+      </div></td>
+      <td>${u.display}</td>
+      <td><span class="role-badge ${u.role==='admin'?'role-admin':'role-worker'}">${u.role==='admin'?'מנהל':'עובד'}</span></td>
+      <td><span class="pass-mask">••••••</span></td>
+      <td><div class="btn-row">
+        <button class="btn-sm btn-edit" onclick="openEdit(${u.id})">ערוך</button>
+        <button class="btn-sm btn-reset" onclick="openReset(${u.id})">סיסמה</button>
+        ${u.role!=='admin'?`<button class="btn-sm btn-del" onclick="openDelete(${u.id})">מחק</button>`:''}
+      </div></td>
+    </tr>`).join('');
+}
+
+function addLog(type,text){
+  const time=new Date().toLocaleTimeString('he-IL');
+  const item=document.createElement('div');
+  item.className='log-item';
+  item.innerHTML=`<div class="log-dot ${type}"></div><div><div class="log-text">${text}</div><div class="log-time">${time}</div></div>`;
+  const list=document.getElementById('log-list');
+  list.insertBefore(item,list.firstChild);
+}
+
+function showToast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast-bar show toast-'+type;
+  setTimeout(()=>t.className='toast-bar',3500);
+}
+
+function openAdd(){
+  editId=null;
+  document.getElementById('modal-title').textContent='הוסף משתמש';
+  document.getElementById('f-pass-lbl').textContent='סיסמה';
+  document.getElementById('f-pass-hint').textContent='';
+  document.getElementById('f-user').value='';
+  document.getElementById('f-disp').value='';
+  document.getElementById('f-pass').value='';
+  document.getElementById('f-role').value='worker';
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+function openEdit(id){
+  editId=id;
+  const u=users.find(x=>x.id===id);
+  document.getElementById('modal-title').textContent='עריכת '+u.display;
+  document.getElementById('f-pass-lbl').textContent='סיסמה חדשה';
+  document.getElementById('f-pass-hint').textContent='השאר ריק כדי לא לשנות';
+  document.getElementById('f-user').value=u.username;
+  document.getElementById('f-disp').value=u.display;
+  document.getElementById('f-pass').value='';
+  document.getElementById('f-role').value=u.role;
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+function closeModal(){document.getElementById('modal-overlay').classList.remove('show');}
+
+async function saveUser(){
+  const username=document.getElementById('f-user').value.trim();
+  const display=document.getElementById('f-disp').value.trim();
+  const password=document.getElementById('f-pass').value;
+  const role=document.getElementById('f-role').value;
+  if(!username||!display){showToast('יש למלא שם משתמש ושם תצוגה','error');return;}
+  if(!editId&&!password){showToast('יש להזין סיסמה למשתמש חדש','error');return;}
+  try{
+    if(editId){
+      const body={username,display,role};
+      if(password) body.password=password;
+      await apiAdmin('/api/admin/users/'+editId,'PATCH',body);
+      addLog('edit','עודכן משתמש: '+display+(password?' (כולל סיסמה)':''));
+      showToast('המשתמש עודכן בהצלחה','success');
+    } else {
+      await apiAdmin('/api/admin/users','POST',{username,display,password,role});
+      addLog('add','נוסף משתמש חדש: '+display+' ('+role+')');
+      showToast('המשתמש נוסף בהצלחה','success');
+    }
+    closeModal();
+    await loadUsers();
+  }catch(e){
+    showToast('שגיאה: '+e.message,'error');
+  }
+}
+
+function openDelete(id){
+  deleteId=id;
+  const u=users.find(x=>x.id===id);
+  document.getElementById('del-warn').textContent='מחיקת המשתמש "'+u.display+'" ('+u.username+')';
+  document.getElementById('del-overlay').classList.add('show');
+}
+
+function closeDelete(){document.getElementById('del-overlay').classList.remove('show');deleteId=null;}
+
+async function confirmDelete(){
+  const u=users.find(x=>x.id===deleteId);
+  try{
+    await apiAdmin('/api/admin/users/'+deleteId,'DELETE');
+    addLog('del','נמחק משתמש: '+u.display);
+    showToast('המשתמש נמחק בהצלחה','success');
+    closeDelete();
+    await loadUsers();
+  }catch(e){
+    showToast('שגיאה: '+e.message,'error');
+  }
+}
+
+function openReset(id){
+  resetId=id;
+  const u=users.find(x=>x.id===id);
+  document.getElementById('reset-name').textContent=u.display;
+  document.getElementById('reset-pass').value='';
+  document.getElementById('reset-pass2').value='';
+  document.getElementById('reset-overlay').classList.add('show');
+}
+
+function closeReset(){document.getElementById('reset-overlay').classList.remove('show');resetId=null;}
+
+async function confirmReset(){
+  const p1=document.getElementById('reset-pass').value;
+  const p2=document.getElementById('reset-pass2').value;
+  if(!p1){showToast('יש להזין סיסמה חדשה','error');return;}
+  if(p1!==p2){showToast('הסיסמאות אינן תואמות','error');return;}
+  if(p1.length<3){showToast('סיסמה חייבת להיות לפחות 3 תווים','error');return;}
+  const u=users.find(x=>x.id===resetId);
+  try{
+    await apiAdmin('/api/admin/users/'+resetId,'PATCH',{password:p1});
+    addLog('reset','אופסה סיסמה עבור: '+u.display);
+    showToast('הסיסמה עודכנה בהצלחה','success');
+    closeReset();
+    await loadUsers();
+  }catch(e){
+    showToast('שגיאה: '+e.message,'error');
+  }
+}
+
+// Export users.js
+function exportUsers(){
+  const code='const users = '+JSON.stringify(users,null,2)+';\nmodule.exports = users;';
+  const blob=new Blob([code],{type:'text/javascript'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='users.js';
+  a.click();
+}
+</script>
+
+<!-- כפתור export -->
+<div style="max-width:800px;margin:0 auto;padding:0 20px 32px;text-align:left;" id="export-wrap" style="display:none;">
+  <button onclick="exportUsers()" style="padding:10px 20px;background:#fff;border:1px solid var(--border-mid);border-radius:var(--radius-md);font-size:13px;cursor:pointer;color:var(--text-secondary);">
+    ייצא users.js מעודכן להעלאה ל-GitHub
+  </button>
+</div>
+
+<script>
+document.getElementById('admin-app').addEventListener('click',function(){
+  document.getElementById('export-wrap').style.display='block';
+});
+</script>
+
+</body>
+</html>
