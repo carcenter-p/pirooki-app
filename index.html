@@ -588,17 +588,20 @@ async function searchVehicleFromServer(regnum){
     // בנה מבנה זהה לדמו
     const v = {
       title: vehicle.PARTDES || vehicle.PARTNAME,
-      sub: vehicle.SERDES || '',
+      sub: [vehicle.QAMF_TOZAR, vehicle.QAME_GIMUR, vehicle.QAME_TIMEGETROAD].filter(Boolean).join(' · '),
       id: vehicle.SERNUM,
-      km: '', date: '',
+      km: vehicle.QAMF_OOZMETER || '',
+      date: vehicle.ODATE ? vehicle.ODATE.split('T')[0] : '',
       parts: parts.map((p,i) => ({
-        id: p.PARTNAME + i,
+        id: 'P' + p.PART + '_' + i,
         name: p.PARTDES || p.PARTNAME,
-        assembly: p.MECLOL || p.PARTNAME,
-        dismantled: p.DISMANTLED === 'Y',
-        makat: p.DISMANTLED === 'Y' ? p.PARTNAME : '',
+        assembly: p.PARTNAME,
+        dismantled: p.UNLOADED === 'Y',
+        makat: p.UNLOADED === 'Y' ? p.PARTNAME : '',
         selected: false,
-        _partname: p.PARTNAME
+        _partname: p.PARTNAME,
+        _part: p.PART,
+        _sern: p.SERN
       }))
     };
     currentVehicle = v;
