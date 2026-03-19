@@ -438,13 +438,22 @@ function closeConfirm(){
   pendingUndoId=null;
 }
 
-function confirmUndo(){
+async function confirmUndo(){
   const p=currentVehicle.parts.find(x=>x.id===pendingUndoId);
   if(p){
     p.dismantled=false;
     p.makat='';
     p.selected=false;
-    showToast('פירוק בוטל — מסתנכרן עם פריורטי');
+    // שלח לשרת לביטול
+    if(authToken){
+      try{
+        const reg=document.getElementById('regInput').value;
+        await apiCall('/api/parts/undo','PATCH',{regnum:reg, partname:p.assembly});
+        showToast('פירוק בוטל — עודכן בפריורטי');
+      }catch(e){
+        showToast('שגיאה בביטול: '+e.message);
+      }
+    }
   }
   closeConfirm();
   const q=document.getElementById('partsSearch')?document.getElementById('partsSearch').value:'';
