@@ -347,6 +347,7 @@ function renderPartsList(parts, query){
       <div class="chk"><svg viewBox="0 0 13 13" fill="none" stroke="white" stroke-width="2.2"><polyline points="2,6.5 5.5,10 11,3"/></svg></div>
       <div class="part-info">
         <div class="part-name">${p.name}</div>
+        <div class="part-sub">מכלול: ${p.assembly}</div>
         ${p.dismantled?`<span class="tag-dis">פורק</span>`:''}
       </div>
     </div>`;
