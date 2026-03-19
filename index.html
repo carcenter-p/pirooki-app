@@ -233,9 +233,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
       <div class="flow-handle"></div>
       <div class="flow-title">שליחה לפריורטי</div>
       <div class="flow-parts" id="flow-parts-list"></div>
-      <div class="flow-step"><div class="step-dot step-wait" id="dot1">1</div><div><div class="step-text">שליחת נתונים לפריורטי</div><div class="step-sub" id="sub1">קוד מכלול + מספר רכב → בניית מק"ט</div></div></div>
-      <div class="flow-step"><div class="step-dot step-wait" id="dot2">2</div><div><div class="step-text">פריורטי יוצר מק"ט לכל חלק</div><div class="step-sub" id="sub2">ממתין לתשובת פריורטי...</div></div></div>
-      <div class="flow-step"><div class="step-dot step-wait" id="dot3">3</div><div><div class="step-text">פריורטי מעדכן סטטוס</div><div class="step-sub" id="sub3">החלקים מסומנים כפורקו</div></div></div>
+      <div class="flow-step"><div class="step-dot step-wait" id="dot1">1</div><div><div class="step-text">שליחת נתונים לפריורטי</div><div class="step-sub" id="sub1">סימון UNLOADED=Y</div></div></div>
+      <div class="flow-step"><div class="step-dot step-wait" id="dot2">2</div><div><div class="step-text">פריורטי מעדכן</div><div class="step-sub" id="sub2">ממתין לתשובת פריורטי...</div></div></div>
+      <div class="flow-step"><div class="step-dot step-wait" id="dot3">3</div><div><div class="step-text">טריגר מופעל</div><div class="step-sub" id="sub3">יצירת מכלול והדפסת מדבקה</div></div></div>
       <div class="flow-actions" id="flow-actions">
         <button class="btn-sec" onclick="closeFlow()">ביטול</button>
         <button class="btn-pri" onclick="runFlow()">אשר ושלח</button>
@@ -389,7 +389,7 @@ function openFlow(){
   const sel=currentVehicle.parts.filter(p=>p.selected&&!p.dismantled);
   const reg=document.getElementById('regInput').value;
   document.getElementById('flow-parts-list').innerHTML=sel.map(p=>
-    `<div class="flow-part-row"><span class="flow-part-name">${p.name}</span><span class="flow-part-makat">${p.assembly}-${reg.slice(-4)} <span style="color:#999;font-weight:400">(יווצר)</span></span></div>`).join('');
+    `<div class="flow-part-row"><span class="flow-part-name">${p.name}</span><span class="flow-part-makat">${p.assembly}</span></div>`).join('');
   ['dot1','dot2','dot3'].forEach((d,i)=>{const el=document.getElementById(d);el.className='step-dot step-wait';el.textContent=i+1;});
   document.getElementById('sub1').textContent='קוד מכלול + מספר רכב → בניית מק"ט';
   document.getElementById('sub2').textContent='ממתין לתשובת פריורטי...';
@@ -401,27 +401,37 @@ function openFlow(){
 
 function closeFlow(){document.getElementById('flow-overlay').classList.remove('show');}
 
-function runFlow(){
+async function runFlow(){
   document.getElementById('flow-actions').style.display='none';
   const reg=document.getElementById('regInput').value;
   const d1=document.getElementById('dot1'),d2=document.getElementById('dot2'),d3=document.getElementById('dot3');
+  const sel=currentVehicle.parts.filter(p=>p.selected&&!p.dismantled);
+
   d1.className='step-dot step-active';d1.innerHTML='<div class="spinner"></div>';
-  document.getElementById('sub1').textContent='שולח נתונים...';
-  setTimeout(()=>{
-    d1.className='step-dot step-ok';d1.textContent='✓';document.getElementById('sub1').textContent='נשלח בהצלחה';
-    d2.className='step-dot step-active';d2.innerHTML='<div class="spinner"></div>';document.getElementById('sub2').textContent='פריורטי בונה מק"ט...';
-  },1400);
-  setTimeout(()=>{
-    d2.className='step-dot step-ok';d2.textContent='✓';document.getElementById('sub2').textContent='פריטים נוצרו בפריורטי';
-    d3.className='step-dot step-active';d3.innerHTML='<div class="spinner"></div>';document.getElementById('sub3').textContent='שולח הוראה לברטנדר...';
-  },2900);
-  setTimeout(()=>{
-    d3.className='step-dot step-ok';d3.textContent='✓';document.getElementById('sub3').textContent='סטטוס עודכן בפריורטי';
-    const sel=currentVehicle.parts.filter(p=>p.selected&&!p.dismantled);
-    sel.forEach(p=>{p.selected=false;p.dismantled=true;p.makat=p.assembly+'-'+reg.slice(-4);});
-    document.getElementById('flow-actions').style.display='flex';
-    document.getElementById('flow-actions').innerHTML='<button class="btn-pri" style="width:100%" onclick="closeFlow();renderDismantleBody();">סגור</button>';
-  },4400);
+  document.getElementById('sub1').textContent='שולח לפריורטי...';
+
+  try {
+    await apiCall('/api/parts/dismantle','POST',{
+      regnum: reg,
+      parts: sel.map(p=>({partname: p.assembly}))
+    });
+    d1.className='step-dot step-ok';d1.textContent='✓';
+    document.getElementById('sub1').textContent='נשלח בהצלחה';
+
+    d2.className='step-dot step-ok';d2.textContent='✓';
+    document.getElementById('sub2').textContent='פריורטי עדכן';
+
+    d3.className='step-dot step-ok';d3.textContent='✓';
+    document.getElementById('sub3').textContent='טריגר הופעל בפריורטי';
+
+    sel.forEach(p=>{p.selected=false;p.dismantled=true;p.makat=p.assembly;});
+  } catch(e) {
+    d1.className='step-dot step-wait';d1.textContent='!';
+    document.getElementById('sub1').textContent='שגיאה: '+e.message;
+  }
+
+  document.getElementById('flow-actions').style.display='flex';
+  document.getElementById('flow-actions').innerHTML='<button class="btn-pri" style="width:100%" onclick="closeFlow();renderDismantleBody();">סגור</button>';
 }
 
 function closeConfirm(){
