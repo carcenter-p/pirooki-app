@@ -347,8 +347,7 @@ function renderPartsList(parts, query){
       <div class="chk"><svg viewBox="0 0 13 13" fill="none" stroke="white" stroke-width="2.2"><polyline points="2,6.5 5.5,10 11,3"/></svg></div>
       <div class="part-info">
         <div class="part-name">${p.name}</div>
-        <div class="part-sub">קוד מכלול: ${p.assembly}</div>
-        ${p.dismantled?`<div class="part-makat">מק"ט: ${p.makat}</div><span class="tag-dis">פורק</span>`:''}
+        ${p.dismantled?`<span class="tag-dis">פורק</span>`:''}
       </div>
     </div>`;
   }).join('');
@@ -599,7 +598,7 @@ async function searchVehicleFromServer(regnum){
     const v = {
       title: vehicle.PARTDES || vehicle.PARTNAME,
       sub: [vehicle.QAMF_TOZAR, vehicle.QAME_GIMUR, vehicle.QAME_TIMEGETROAD].filter(Boolean).join(' · '),
-      id: vehicle.SERNUM,
+      id: vehicle.QAMF_LICENSEPLATE || vehicle.SERNUM,
       km: vehicle.QAMF_OOZMETER || '',
       date: vehicle.ODATE ? vehicle.ODATE.split('T')[0] : '',
       parts: parts.map((p,i) => ({
