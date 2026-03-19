@@ -314,11 +314,11 @@ function renderDismantleBody(){
     <div class="vcard">
       <div class="vcard-header">
         <div class="vicon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="1.8"><path d="M5 17H3v-5l2-5h14l2 5v5h-2M5 17a2 2 0 104 0m6 0a2 2 0 104 0"/></svg></div>
-        <div><div class="vtitle">${v.title}</div><div class="vsub">${v.sub} · ${reg}</div></div>
+        <div><div class="vtitle">${v.sub || v.title}</div><div class="vsub">${v.id}</div></div>
       </div>
       <div class="vmeta">
-        <div class="vmeta-item"><div class="vmeta-label">מזהה פריורטי</div><div class="vmeta-val">${v.id}</div></div>
-        <div class="vmeta-item"><div class="vmeta-label">ק"מ</div><div class="vmeta-val">${v.km}</div></div>
+        <div class="vmeta-item"><div class="vmeta-label">מספר רישוי</div><div class="vmeta-val">${v.id}</div></div>
+        <div class="vmeta-item"><div class="vmeta-label">ק"מ</div><div class="vmeta-val">${v.km || '—'}</div></div>
         <div class="vmeta-item"><div class="vmeta-label">תאריך קבלה</div><div class="vmeta-val">${v.date}</div></div>
         <div class="vmeta-item"><div class="vmeta-label">חלקים ברשימה</div><div class="vmeta-val">${v.parts.length}</div></div>
       </div>
