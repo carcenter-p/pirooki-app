@@ -612,17 +612,31 @@ async function searchVehicleFromServer(regnum){
 async function loadOrders(){
   try {
     const data = await apiCall('/api/orders');
-    const mapped = data.map(o => ({
-      num: o.ORDNAME,
-      customer: o.CDES || '',
-      date: o.CURDATE ? o.CURDATE.split('T')[0] : '',
-      status: ['לפירוק','בעבודה','פורק'].indexOf(o.ORDSTATUSDES) >= 0
-              ? ['לפירוק','בעבודה','פורק'].indexOf(o.ORDSTATUSDES) : 0,
-      items: o.QAMF_PARTDES ? [{name: o.QAMF_PARTDES, done:false}] : 
-             o.QAMF_PARTNAME ? [{name: o.QAMF_PARTNAME, done:false}] : [],
-      plate: o.QAMF_LICENSEPLATE || '',
-      _ordname: o.ORDNAME
-    }));
+    // קבץ שורות לפי מספר הזמנה
+    const grouped = {};
+    data.forEach(o => {
+      if(!grouped[o.ORDNAME]){
+        grouped[o.ORDNAME] = {
+          num: o.ORDNAME,
+          customer: o.CDES || '',
+          date: o.CURDATE ? o.CURDATE.split('T')[0] : '',
+          status: ['לפירוק','בעבודה','פורק'].indexOf(o.ORDSTATUSDES) >= 0
+                  ? ['לפירוק','בעבודה','פורק'].indexOf(o.ORDSTATUSDES) : 0,
+          items: [],
+          plate: o.QAMF_LICENSEPLATE || '',
+          _ordname: o.ORDNAME
+        };
+      }
+      if(o.PDES || o.PARTNAME){
+        const car = [o.SPEC18, o.SPEC2, o.SPEC4].filter(Boolean).join(' ');
+        grouped[o.ORDNAME].items.push({
+          name: (o.PDES || o.PARTNAME) + (car ? ' — ' + car : ''),
+          itemStatus: o.ORDISTATUSDES || '',
+          done: o.ORDISTATUSDES === 'פורק'
+        });
+      }
+    });
+    const mapped = Object.values(grouped);
     orders.splice(0, orders.length, ...mapped);
     renderOrders();
   } catch(e) {
