@@ -612,21 +612,21 @@ async function searchVehicleFromServer(regnum){
 async function loadOrders(){
   try {
     const data = await apiCall('/api/orders');
-    // המר מבנה פריורטי למבנה האפליקציה
     const mapped = data.map(o => ({
       num: o.ORDNAME,
-      customer: o.CDES,
+      customer: o.CDES || '',
       date: o.CURDATE ? o.CURDATE.split('T')[0] : '',
-      status: ['לפירוק','בעבודה','פורק'].indexOf(o.QAMF_STATUS) >= 0
-              ? ['לפירוק','בעבודה','פורק'].indexOf(o.QAMF_STATUS) : 0,
-      items: (o.ORDERITEMS||[]).map(i => ({name: i.PARTDES||i.PARTNAME, done:false})),
+      status: ['לפירוק','בעבודה','פורק'].indexOf(o.ORDSTATUSDES) >= 0
+              ? ['לפירוק','בעבודה','פורק'].indexOf(o.ORDSTATUSDES) : 0,
+      items: o.QAMF_PARTDES ? [{name: o.QAMF_PARTDES, done:false}] : 
+             o.QAMF_PARTNAME ? [{name: o.QAMF_PARTNAME, done:false}] : [],
+      plate: o.QAMF_LICENSEPLATE || '',
       _ordname: o.ORDNAME
     }));
     orders.splice(0, orders.length, ...mapped);
     renderOrders();
   } catch(e) {
     console.error('orders load error:', e);
-    // אם נכשל — הצג דמו
     renderOrders();
   }
 }
