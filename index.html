@@ -593,15 +593,14 @@ async function searchVehicleFromServer(regnum){
       km: vehicle.QAMF_OOZMETER || '',
       date: vehicle.ODATE ? vehicle.ODATE.split('T')[0] : '',
       parts: parts.map((p,i) => ({
-        id: 'P' + p.PART + '_' + i,
+        id: 'P' + p.PARTNAME + '_' + i,
         name: p.PARTDES || p.PARTNAME,
         assembly: p.PARTNAME,
-        dismantled: p.UNLOADED === 'Y',
-        makat: p.UNLOADED === 'Y' ? p.PARTNAME : '',
+        dismantled: p.DISMANTLED === 'Y',
+        makat: p.DISMANTLED === 'Y' ? p.PARTNAME : '',
         selected: false,
         _partname: p.PARTNAME,
-        _part: p.PART,
-        _sern: p.SERN
+        _part: p.PART
       }))
     };
     currentVehicle = v;
