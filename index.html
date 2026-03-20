@@ -433,24 +433,31 @@ function closeConfirm(){
   pendingUndoId=null;
 }
 
-async function confirmUndo(){
+function confirmUndo(){
   const p=currentVehicle.parts.find(x=>x.id===pendingUndoId);
   if(p){
     p.dismantled=false;
     p.makat='';
     p.selected=false;
-    // שלח לשרת לביטול
-    if(authToken){
-      try{
-        const reg=document.getElementById('regInput').value;
-        await apiCall('/api/parts/undo','PATCH',{regnum:reg, partname:p.assembly});
-        showToast('פירוק בוטל — עודכן בפריורטי');
-      }catch(e){
-        showToast('שגיאה בביטול: '+e.message);
-      }
-    }
   }
   closeConfirm();
+  const q=document.getElementById('partsSearch')?document.getElementById('partsSearch').value:'';
+  const inner=document.getElementById('parts-inner');
+  if(inner) inner.innerHTML=renderPartsList(currentVehicle.parts, q);
+  const sel=currentVehicle.parts.filter(x=>x.selected&&!x.dismantled).length;
+  const dis=currentVehicle.parts.filter(x=>x.dismantled).length;
+  const counter=document.querySelector('.counter');
+  if(counter) counter.textContent=sel+' נבחרו · '+dis+' פורקו';
+  const btn=document.getElementById('btn-send-main');
+  if(btn) btn.disabled=sel===0;
+  showToast('מבטל פירוק...');
+  // שלח ברקע
+  if(authToken && p){
+    const reg=document.getElementById('regInput').value;
+    apiCall('/api/parts/undo','PATCH',{regnum:reg, partname:p.assembly})
+      .then(()=>showToast('ביטול פירוק בוצע בפריורטי ✓'))
+      .catch(e=>{ showToast('שגיאה בביטול: '+e.message); console.error('undo error:',e); });
+  }
   const q=document.getElementById('partsSearch')?document.getElementById('partsSearch').value:'';
   const inner=document.getElementById('parts-inner');
   if(inner) inner.innerHTML=renderPartsList(currentVehicle.parts, q);
