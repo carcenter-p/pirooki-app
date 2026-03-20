@@ -406,6 +406,8 @@ async function runFlow(){
   const reg=document.getElementById('regInput').value;
   const d1=document.getElementById('dot1'),d2=document.getElementById('dot2'),d3=document.getElementById('dot3');
   const sel=currentVehicle.parts.filter(p=>p.selected&&!p.dismantled);
+  const partsToSend = sel.map(p=>({partname: p.assembly}));
+  console.log('sending', partsToSend.length, 'parts:', partsToSend.map(p=>p.partname));
 
   d1.className='step-dot step-active';d1.innerHTML='<div class="spinner"></div>';
   document.getElementById('sub1').textContent='שולח לפריורטי...';
@@ -414,12 +416,12 @@ async function runFlow(){
   sel.forEach(p=>{p.selected=false;p.dismantled=true;p.makat=p.assembly;});
   closeFlow();
   renderDismantleBody();
-  showToast('מפרק חלקים...');
+  showToast('מפרק '+partsToSend.length+' חלקים...');
 
   // שלח לפריורטי ברקע
   apiCall('/api/parts/dismantle','POST',{
     regnum: reg,
-    parts: sel.map(p=>({partname: p.assembly}))
+    parts: partsToSend
   }).then(()=>{
     showToast('פירוק בוצע בפריורטי ✓');
   }).catch(e=>{
