@@ -478,6 +478,7 @@ function renderOrders(){
       <div class="order-head"><div class="order-num">${o.num}</div><span class="badge badge-${o.status}">${STATUSES[o.status]}</span></div>
       <div class="order-meta">
         <div class="order-row"><span>לקוח</span><span>${o.customer}</span></div>
+        <div class="order-row"><span>סוכן</span><span>${o.agent}</span></div>
         <div class="order-row"><span>תאריך</span><span>${o.date}</span></div>
       </div>
       <div style="margin-bottom:14px">
@@ -641,6 +642,7 @@ async function loadOrders(){
         grouped[o.ORDNAME] = {
           num: o.ORDNAME,
           customer: o.CDES || '',
+          agent: o.QAME_AGENTNAME || '',
           date: o.CURDATE ? o.CURDATE.split('T')[0] : '',
           status: ['לפירוק','בעבודה','פורק'].indexOf(o.ORDSTATUSDES) >= 0
                   ? ['לפירוק','בעבודה','פורק'].indexOf(o.ORDSTATUSDES) : 0,
