@@ -441,15 +441,15 @@ function confirmUndo(){
     p.selected=false;
   }
   closeConfirm();
-  const q=document.getElementById('partsSearch')?document.getElementById('partsSearch').value:'';
-  const inner=document.getElementById('parts-inner');
-  if(inner) inner.innerHTML=renderPartsList(currentVehicle.parts, q);
-  const sel=currentVehicle.parts.filter(x=>x.selected&&!x.dismantled).length;
-  const dis=currentVehicle.parts.filter(x=>x.dismantled).length;
-  const counter=document.querySelector('.counter');
-  if(counter) counter.textContent=sel+' נבחרו · '+dis+' פורקו';
-  const btn=document.getElementById('btn-send-main');
-  if(btn) btn.disabled=sel===0;
+  const undoQ=document.getElementById('partsSearch')?document.getElementById('partsSearch').value:'';
+  const undoInner=document.getElementById('parts-inner');
+  if(undoInner) undoInner.innerHTML=renderPartsList(currentVehicle.parts, undoQ);
+  const undoSel=currentVehicle.parts.filter(x=>x.selected&&!x.dismantled).length;
+  const undoDis=currentVehicle.parts.filter(x=>x.dismantled).length;
+  const undoCounter=document.querySelector('.counter');
+  if(undoCounter) undoCounter.textContent=undoSel+' נבחרו · '+undoDis+' פורקו';
+  const undoBtn=document.getElementById('btn-send-main');
+  if(undoBtn) undoBtn.disabled=undoSel===0;
   showToast('מבטל פירוק...');
   // שלח ברקע
   if(authToken && p){
