@@ -413,7 +413,7 @@ async function runFlow(){
   try {
     await apiCall('/api/parts/dismantle','POST',{
       regnum: reg,
-      parts: sel.map(p=>({partname: p.assembly}))
+      parts: sel.map(p=>({partname: p.assembly, part: p._part, sern: p._sern}))
     });
     d1.className='step-dot step-ok';d1.textContent='✓';
     document.getElementById('sub1').textContent='נשלח בהצלחה';
@@ -611,7 +611,8 @@ async function searchVehicleFromServer(regnum){
         makat: p.DISMANTLED === 'Y' ? p.PARTNAME : '',
         selected: false,
         _partname: p.PARTNAME,
-        _part: p.PART
+        _part: p.PART,
+        _sern: p.SERN
       }))
     };
     currentVehicle = v;
