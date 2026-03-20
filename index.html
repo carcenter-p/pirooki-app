@@ -602,7 +602,7 @@ async function searchVehicleFromServer(regnum){
     // בנה מבנה זהה לדמו
     const v = {
       title: vehicle.PARTDES || vehicle.PARTNAME,
-      sub: [vehicle.QAMF_TOZAR, vehicle.QAME_GIMUR, vehicle.QAME_TIMEGETROAD].filter(Boolean).join(' · '),
+      sub: vehicle.PARTDES || [vehicle.QAMF_TOZAR, vehicle.QAME_GIMUR, vehicle.QAME_TIMEGETROAD].filter(Boolean).join(' · '),
       id: vehicle.QAMF_LICENSEPLATE || vehicle.SERNUM,
       km: vehicle.QAMF_OOZMETER || '',
       date: vehicle.ODATE ? vehicle.ODATE.split('T')[0] : '',
