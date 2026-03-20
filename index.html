@@ -410,29 +410,19 @@ async function runFlow(){
   d1.className='step-dot step-active';d1.innerHTML='<div class="spinner"></div>';
   document.getElementById('sub1').textContent='שולח לפריורטי...';
 
-  // Optimistic UI — מסמן מיד ושולח ברקע
+  // Optimistic UI — סגור מיד ושלח ברקע
   sel.forEach(p=>{p.selected=false;p.dismantled=true;p.makat=p.assembly;});
-  d1.className='step-dot step-ok';d1.textContent='✓';
-  document.getElementById('sub1').textContent='בוצע!';
-  d2.className='step-dot step-ok';d2.textContent='✓';
-  document.getElementById('sub2').textContent='מסתנכרן עם פריורטי...';
-  d3.className='step-dot step-wait';d3.textContent='3';
-  document.getElementById('flow-actions').style.display='flex';
-  document.getElementById('flow-actions').innerHTML='<button class="btn-pri" style="width:100%" onclick="closeFlow();renderDismantleBody();">סגור</button>';
+  closeFlow();
+  renderDismantleBody();
+  showToast('מפרק חלקים...');
 
   // שלח לפריורטי ברקע
   apiCall('/api/parts/dismantle','POST',{
     regnum: reg,
     parts: sel.map(p=>({partname: p.assembly}))
   }).then(()=>{
-    d2.textContent='✓';
-    document.getElementById('sub2').textContent='סונכרן עם פריורטי ✓';
-    d3.className='step-dot step-ok';d3.textContent='✓';
-    document.getElementById('sub3').textContent='הטריגר הופעל ✓';
     showToast('פירוק בוצע בפריורטי ✓');
   }).catch(e=>{
-    d2.className='step-dot step-wait';d2.textContent='!';
-    document.getElementById('sub2').textContent='שגיאת סנכרון — בדוק פריורטי';
     showToast('שגיאה בסנכרון עם פריורטי');
     console.error('dismantle bg error:', e.message);
   });
