@@ -482,6 +482,7 @@ function renderOrders(){
         <div class="order-row"><span>תאריך</span><span>${o.date}</span></div>
       </div>
       <div style="margin-bottom:14px">
+        ${o.plate ? `<div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">🚗 מס' רכב: <strong style="color:var(--text-primary)">${o.plate}</strong></div>` : ''}
         <div class="items-label">פריטים — ${done}/${o.items.length} פורקו</div>
         ${o.items.map((item,ii)=>{
           return `<div class="order-item-row">
@@ -661,7 +662,8 @@ async function loadOrders(){
                   ? ['לפירוק','בעבודה','פורק'].indexOf(o.ORDSTATUSDES) : 0,
           items: [],
           plate: o.QAMF_LICENSEPLATE || '',
-          _ordname: o.ORDNAME
+          _ordname: o.ORDNAME,
+          _ordi: o.ORDI
         };
       }
       if(o.PDES || o.PARTNAME){
