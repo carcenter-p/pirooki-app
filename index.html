@@ -493,15 +493,31 @@ function renderOrders(){
         <div class="status-selector">
           ${STATUSES.map((s,si)=>`<button class="status-btn ${o.status===si?'s'+si:''}" onclick="changeStatus(${oi},${si})">${s}</button>`).join('')}
         </div>
-        <button onclick="bringCar('${o._ordname}')" style="width:100%;padding:10px;background:#0C447C;color:white;border:none;border-radius:var(--radius-lg);font-size:14px;cursor:pointer;font-weight:500;">
+        <button onclick="bringCar('${o._ordname}')" style="width:100%;padding:10px;background:#0C447C;color:white;border:none;border-radius:var(--radius-lg);font-size:14px;cursor:pointer;font-weight:500;margin-bottom:6px;">
           🚗 הבא רכב לפירוק
         </button>
+        <div style="display:flex;gap:6px;">
+          <button onclick="transferCar('${o._ordname}','3')" style="flex:1;padding:9px 4px;background:#EAF3DE;color:#3B6D11;border:1px solid #C0DD97;border-radius:var(--radius-md);font-size:12px;cursor:pointer;font-weight:500;">החזר למיקום</button>
+          <button onclick="transferCar('${o._ordname}','4')" style="flex:1;padding:9px 4px;background:#FAEEDA;color:#854F0B;border:1px solid #FAC775;border-radius:var(--radius-md);font-size:12px;cursor:pointer;font-weight:500;">לשחיטה</button>
+          <button onclick="transferCar('${o._ordname}','5')" style="flex:1;padding:9px 4px;background:#FCEBEB;color:#791F1F;border:1px solid #F7C1C1;border-radius:var(--radius-md);font-size:12px;cursor:pointer;font-weight:500;">לברזל</button>
+        </div>
       </div>
     </div>`;
   }).join('');
 }
 
 function toggleOrderItem(oi,ii){orders[oi].items[ii].done=!orders[oi].items[ii].done;renderOrders();}
+
+async function transferCar(ordname, stcode){
+  const labels = {'3':'החזרה למיקום','4':'העברה לשחיטה','5':'העברה לברזל'};
+  showToast('שולח פקודת '+labels[stcode]+'...');
+  try{
+    const data = await apiCall('/api/transfer/return','POST',{ordname, stcode});
+    showToast(labels[stcode]+' בוצע ✓ — תעודה: '+data.docno);
+  }catch(e){
+    showToast('שגיאה: '+e.message);
+  }
+}
 
 async function bringCar(ordname){
   showToast('שולח פקודה להבאת רכב...');
