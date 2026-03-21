@@ -492,12 +492,25 @@ function renderOrders(){
         <div class="status-selector">
           ${STATUSES.map((s,si)=>`<button class="status-btn ${o.status===si?'s'+si:''}" onclick="changeStatus(${oi},${si})">${s}</button>`).join('')}
         </div>
+        <button onclick="bringCar('${o._ordname}')" style="width:100%;padding:10px;background:#0C447C;color:white;border:none;border-radius:var(--radius-lg);font-size:14px;cursor:pointer;font-weight:500;">
+          🚗 הבא רכב לפירוק
+        </button>
       </div>
     </div>`;
   }).join('');
 }
 
 function toggleOrderItem(oi,ii){orders[oi].items[ii].done=!orders[oi].items[ii].done;renderOrders();}
+
+async function bringCar(ordname){
+  showToast('שולח פקודה להבאת רכב...');
+  try{
+    const data = await apiCall('/api/transfer/bring-by-order','POST',{ordname});
+    showToast('פקודת הבא רכב נשלחה ✓ — תעודה: '+data.docno);
+  }catch(e){
+    showToast('שגיאה: '+e.message);
+  }
+}
 
 async function changeItemStatus(oi,ii,si){
   const item=orders[oi].items[ii];
