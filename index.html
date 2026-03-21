@@ -334,6 +334,10 @@ function renderDismantleBody(){
     <div style="height:80px;"></div>
     <div class="bottom-bar">
       <button class="btn-main" ${sel===0?'disabled':''} id="btn-send-main" onclick="openFlow()">שלח לפריורטי</button>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button onclick="transferCarByPlate('${reg}','4')" style="flex:1;padding:11px 4px;background:#FAEEDA;color:#854F0B;border:1px solid #FAC775;border-radius:var(--radius-lg);font-size:13px;cursor:pointer;font-weight:500;">העבר לשחיטה</button>
+        <button onclick="transferCarByPlate('${reg}','5')" style="flex:1;padding:11px 4px;background:#FCEBEB;color:#791F1F;border:1px solid #F7C1C1;border-radius:var(--radius-lg);font-size:13px;cursor:pointer;font-weight:500;">העבר לברזל</button>
+      </div>
     </div>`;
 }
 
@@ -507,6 +511,17 @@ function renderOrders(){
 }
 
 function toggleOrderItem(oi,ii){orders[oi].items[ii].done=!orders[oi].items[ii].done;renderOrders();}
+
+async function transferCarByPlate(licenseplate, stcode){
+  const labels = {'4':'העברה לשחיטה','5':'העברה לברזל'};
+  showToast('שולח פקודת '+labels[stcode]+'...');
+  try{
+    const data = await apiCall('/api/transfer/by-plate','POST',{licenseplate, stcode});
+    showToast(labels[stcode]+' בוצע ✓ — תעודה: '+data.docno);
+  }catch(e){
+    showToast('שגיאה: '+e.message);
+  }
+}
 
 async function transferCar(ordname, stcode){
   const labels = {'3':'החזרה למיקום','4':'העברה לשחיטה','5':'העברה לברזל'};
