@@ -286,6 +286,15 @@ const VEHICLES_DB={
   ]}
 };
 const orders=[];
+const sentTransfers = new Set();
+const barzelTransfers = new Set();
+
+async function loadBarzelTransfers(){
+  try{
+    const data = await apiCall('/api/barzel');
+    data.forEach(k => barzelTransfers.add(k));
+  }catch(e){ console.error('barzel load error:', e); }
+}
 let currentVehicle=null;
 
 function searchVehicle(){
@@ -335,8 +344,8 @@ function renderDismantleBody(){
     <div class="bottom-bar">
       <button class="btn-main" ${sel===0?'disabled':''} id="btn-send-main" onclick="openFlow()">שלח לפריורטי</button>
       <div style="display:flex;gap:8px;margin-top:8px;">
-        <button onclick="transferCarByPlate('${reg}','4')" style="flex:1;padding:11px 4px;background:#FAEEDA;color:#854F0B;border:1px solid #FAC775;border-radius:var(--radius-lg);font-size:13px;cursor:pointer;font-weight:500;">העבר לשחיטה</button>
-        <button onclick="transferCarByPlate('${reg}','5')" style="flex:1;padding:11px 4px;background:#FCEBEB;color:#791F1F;border:1px solid #F7C1C1;border-radius:var(--radius-lg);font-size:13px;cursor:pointer;font-weight:500;">העבר לברזל</button>
+        <button onclick="transferCarByPlate('${reg}','4')" style="flex:1;padding:11px 4px;background:${sentTransfers.has('byplate_4_'+reg)?'#A32D2D':'#FAEEDA'};color:${sentTransfers.has('byplate_4_'+reg)?'white':'#854F0B'};border:1px solid ${sentTransfers.has('byplate_4_'+reg)?'#A32D2D':'#FAC775'};border-radius:var(--radius-lg);font-size:13px;cursor:pointer;font-weight:500;">העבר לשחיטה${sentTransfers.has('byplate_4_'+reg)?' ✓':''}</button>
+        <button onclick="transferCarByPlate('${reg}','5')" style="flex:1;padding:11px 4px;background:${(sentTransfers.has('byplate_5_'+reg)||barzelTransfers.has('byplate_5_'+reg))?'#A32D2D':'#FCEBEB'};color:${(sentTransfers.has('byplate_5_'+reg)||barzelTransfers.has('byplate_5_'+reg))?'white':'#791F1F'};border:1px solid ${(sentTransfers.has('byplate_5_'+reg)||barzelTransfers.has('byplate_5_'+reg))?'#A32D2D':'#F7C1C1'};border-radius:var(--radius-lg);font-size:13px;cursor:pointer;font-weight:500;">העבר לברזל${(sentTransfers.has('byplate_5_'+reg)||barzelTransfers.has('byplate_5_'+reg))?' ✓':''}</button>
       </div>
     </div>`;
 }
@@ -497,13 +506,13 @@ function renderOrders(){
         <div class="status-selector">
           ${STATUSES.map((s,si)=>`<button class="status-btn ${o.status===si?'s'+si:''}" onclick="changeStatus(${oi},${si})">${s}</button>`).join('')}
         </div>
-        <button onclick="bringCar('${o._ordname}')" style="width:100%;padding:10px;background:#0C447C;color:white;border:none;border-radius:var(--radius-lg);font-size:14px;cursor:pointer;font-weight:500;margin-bottom:6px;">
-          🚗 הבא רכב לפירוק
+        <button onclick="bringCar('${o._ordname}')" style="width:100%;padding:10px;background:${sentTransfers.has('bring_'+o._ordname)?'#A32D2D':'#0C447C'};color:white;border:none;border-radius:var(--radius-lg);font-size:14px;cursor:pointer;font-weight:500;margin-bottom:6px;">
+          🚗 הבא רכב לפירוק${sentTransfers.has('bring_'+o._ordname)?' ✓':''}
         </button>
         <div style="display:flex;gap:6px;">
-          <button onclick="transferCar('${o._ordname}','3')" style="flex:1;padding:9px 4px;background:#EAF3DE;color:#3B6D11;border:1px solid #C0DD97;border-radius:var(--radius-md);font-size:12px;cursor:pointer;font-weight:500;">החזר למיקום</button>
-          <button onclick="transferCar('${o._ordname}','4')" style="flex:1;padding:9px 4px;background:#FAEEDA;color:#854F0B;border:1px solid #FAC775;border-radius:var(--radius-md);font-size:12px;cursor:pointer;font-weight:500;">העבר לשחיטה</button>
-          <button onclick="transferCar('${o._ordname}','5')" style="flex:1;padding:9px 4px;background:#FCEBEB;color:#791F1F;border:1px solid #F7C1C1;border-radius:var(--radius-md);font-size:12px;cursor:pointer;font-weight:500;">העבר לברזל</button>
+          <button onclick="transferCar('${o._ordname}','3')" style="flex:1;padding:9px 4px;background:${sentTransfers.has('transfer_3_'+o._ordname)?'#A32D2D':'#EAF3DE'};color:${sentTransfers.has('transfer_3_'+o._ordname)?'white':'#3B6D11'};border:1px solid ${sentTransfers.has('transfer_3_'+o._ordname)?'#A32D2D':'#C0DD97'};border-radius:var(--radius-md);font-size:12px;cursor:pointer;font-weight:500;">החזר למיקום${sentTransfers.has('transfer_3_'+o._ordname)?' ✓':''}</button>
+          <button onclick="transferCar('${o._ordname}','4')" style="flex:1;padding:9px 4px;background:${sentTransfers.has('transfer_4_'+o._ordname)?'#A32D2D':'#FAEEDA'};color:${sentTransfers.has('transfer_4_'+o._ordname)?'white':'#854F0B'};border:1px solid ${sentTransfers.has('transfer_4_'+o._ordname)?'#A32D2D':'#FAC775'};border-radius:var(--radius-md);font-size:12px;cursor:pointer;font-weight:500;">העבר לשחיטה${sentTransfers.has('transfer_4_'+o._ordname)?' ✓':''}</button>
+          <button onclick="transferCar('${o._ordname}','5')" style="flex:1;padding:9px 4px;background:${(sentTransfers.has('transfer_5_'+o._ordname)||barzelTransfers.has('transfer_5_'+o._ordname))?'#A32D2D':'#FCEBEB'};color:${(sentTransfers.has('transfer_5_'+o._ordname)||barzelTransfers.has('transfer_5_'+o._ordname))?'white':'#791F1F'};border:1px solid ${(sentTransfers.has('transfer_5_'+o._ordname)||barzelTransfers.has('transfer_5_'+o._ordname))?'#A32D2D':'#F7C1C1'};border-radius:var(--radius-md);font-size:12px;cursor:pointer;font-weight:500;">העבר לברזל${(sentTransfers.has('transfer_5_'+o._ordname)||barzelTransfers.has('transfer_5_'+o._ordname))?' ✓':''}</button>
         </div>
       </div>
     </div>`;
@@ -518,6 +527,12 @@ async function transferCarByPlate(licenseplate, stcode){
   try{
     const data = await apiCall('/api/transfer/by-plate','POST',{licenseplate, stcode});
     showToast(labels[stcode]+' בוצע ✓ — תעודה: '+data.docno);
+    sentTransfers.add('byplate_'+stcode+'_'+licenseplate);
+    if(stcode === '5'){
+      barzelTransfers.add('byplate_5_'+licenseplate);
+      apiCall('/api/barzel','POST',{key:'byplate_5_'+licenseplate}).catch(e=>console.error(e));
+    }
+    renderDismantleBody();
   }catch(e){
     showToast('שגיאה: '+e.message);
   }
@@ -529,6 +544,12 @@ async function transferCar(ordname, stcode){
   try{
     const data = await apiCall('/api/transfer/return','POST',{ordname, stcode});
     showToast(labels[stcode]+' בוצע ✓ — תעודה: '+data.docno);
+    sentTransfers.add('transfer_'+stcode+'_'+ordname);
+    if(stcode === '5'){
+      barzelTransfers.add('transfer_5_'+ordname);
+      apiCall('/api/barzel','POST',{key:'transfer_5_'+ordname}).catch(e=>console.error(e));
+    }
+    renderOrders();
   }catch(e){
     showToast('שגיאה: '+e.message);
   }
@@ -539,6 +560,8 @@ async function bringCar(ordname){
   try{
     const data = await apiCall('/api/transfer/bring-by-order','POST',{ordname});
     showToast('פקודת הבא רכב נשלחה ✓ — תעודה: '+data.docno);
+    sentTransfers.add('bring_'+ordname);
+    renderOrders();
   }catch(e){
     showToast('שגיאה: '+e.message);
   }
@@ -614,8 +637,9 @@ async function doLogin(){
     document.getElementById('login-screen').style.display='none';
     document.getElementById('main-app').style.display='flex';
     err.textContent='';
-    // טען הזמנות מהשרת
+    // טען הזמנות וברזל מהשרת
     loadOrders();
+    loadBarzelTransfers();
   } catch(e) {
     err.textContent = e.message || 'שם משתמש או סיסמה שגויים';
     document.getElementById('login-user').classList.add('error');
